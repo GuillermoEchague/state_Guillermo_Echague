@@ -2,10 +2,10 @@
 import React, {useState} from 'react'
 import { Text, View, TouchableOpacity, StyleSheet, TextInput, Switch } from 'react-native'
 import DateTimePicker from '@react-native-community/datetimepicker';
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation} from '@react-navigation/native';
-// import { useDispatch, useSelector } from 'react-redux';
-// import { addTodoReducer } from '../redux/todosSlice';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigation } from '@react-navigation/native';
+import { addTodoReducer } from '../redux/todosSlice';
 // import * as Notifications from 'expo-notifications';
 
 
@@ -13,6 +13,28 @@ export const AddTodo = () => {
     const [name, setName] = useState('');
     const [date, setDate] = useState(new Date());
     const [isToday, setIsToday] = useState(false);
+    const listTodos = useSelector(state => state.todos.todos);
+    const dispatch = useDispatch();
+    const navigation = useNavigation();
+
+    const addTodo = async () => {
+        const newTodo = {
+            id: Math.floor(Math.random() * 1000000),
+            text: name,
+            hour: date.toString(),
+            isToday: isToday,
+            isComplited: false,
+        }
+        try {
+            await AsyncStorage.setItem("@Todos", JSON.stringify([...listTodos, newTodo]));
+            dispatch(addTodoReducer(newTodo));
+            console.log('Todo saved correctly');
+            navigation.goBack();
+        } catch(e) {
+            console.log(e);
+        }
+
+    }
 
     return (
            <View style={styles.container}>
@@ -48,7 +70,7 @@ export const AddTodo = () => {
             </View>
            
             
-            <TouchableOpacity onPress={AddTodo} style={styles.button}>
+            <TouchableOpacity onPress={addTodo} style={styles.button}>
                 <Text style={{color: 'white'}}>Done</Text>
             </TouchableOpacity>
             </View>
